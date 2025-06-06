@@ -211,17 +211,24 @@ export const App = () => {
                                         <h4>MS Access Query Exercise</h4>
                                         <p>Follow these steps to complete the exercise:</p>
                                         <ol>
-                                            <li>Download the Excel file below containing sample data.</li>
+                                            <li>Download the Excel file below containing stock items and stock groups data.</li>
                                             <li>Create a new MS Access database.</li>
-                                            <li>Import the Excel data into a new table in your MS Access database.</li>
+                                            <li>Import the Excel data into two tables: StockItem and StockGroup.</li>
                                             <li>Write an MS Access query to:</li>
                                             <ul style={{ marginLeft: "40px" }}>
-                                                <li>Select all records where the total income is greater than $500,000</li>
-                                                <li>Sort the results by net profit in descending order</li>
-                                                <li>Display the following fields: Company Name, Total Income, Total Expenses, and Net Profit</li>
+                                                <li>Select the Name field from StockItem table</li>
+                                                <li>Include Parent fields from both StockItem and StockGroup tables with appropriate aliases</li>
+                                                <li>Join StockItem with StockGroup where StockItem's Parent matches StockGroup's Name</li>
+                                                <li>Use LEFT JOIN to include all StockItems even if they don't have a matching StockGroup</li>
+                                            </ul>
+                                            <li>Expected query structure:</li>
+                                            <ul style={{ marginLeft: "40px" }}>
+                                                <li>Must use proper table and field names: StockItem.[$Name], StockItem.[$Parent], StockGroup.[$Parent]</li>
+                                                <li>Must alias fields as [StockItem_$Parent] and [StockGroup_$Parent]</li>
+                                                <li>Must use LEFT JOIN with correct join condition</li>
                                             </ul>
                                         </ol>                                        
-                                        <p>Below is the preview of the Excel data you'll need to import into MS Access:</p>
+                                        <p>Below is the Excel data file containing the StockItem and StockGroup tables:</p>
                                         <div className="download-section" style={{ marginBottom: "20px" }}>
                                             <p><strong>Download the Excel file:</strong></p>
                                             <a 
