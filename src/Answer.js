@@ -11,19 +11,18 @@ const Answer = ({ qn }) => {
     const [sqlQuery, setSqlQuery] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [queryErrors, setQueryErrors] = useState([]);
-    const [resultErrors, setResultErrors] = useState([]);
-
-    // Expected answer format for validation
+    const [resultErrors, setResultErrors] = useState([]);    // Expected answer format for validation
     const expectedAnswer = {
         query: "SELECT StockItem.[$Name], StockItem.[$Parent] AS [StockItem_$Parent], StockGroup.[$Parent] AS [StockGroup_$Parent] FROM StockItem LEFT JOIN StockGroup ON StockItem.[$Parent] = StockGroup.[$Name];",
         expectedResults: {
             columns: ["$Name", "StockItem_$Parent", "StockGroup_$Parent"],
             rowCount: 4,
-            requiredValues: {
-                "$Name": ["122", "Accent Exe Vin:284287", "Accent GLE Executive E3 Engn.G4EBAM268599", "Accent GLE EXE Vin:298416"],
-                "StockItem_$Parent": ["Primary", "Vehicle", "Vehicle", "Primary"],
-                "StockGroup_$Parent": ["Primary", "Primary", "Primary", "Primary"]
-            }
+            requiredRows: [
+                { "$Name": "122", "StockItem_$Parent": "Primary", "StockGroup_$Parent": "Primary" },
+                { "$Name": "Accent Exe Vin:284287", "StockItem_$Parent": "Vehicle", "StockGroup_$Parent": "Primary" },
+                { "$Name": "Accent GLE Executive E3 Engn.G4EBAM268599", "StockItem_$Parent": "Vehicle", "StockGroup_$Parent": "Primary" },
+                { "$Name": "Accent GLE EXE Vin:298416", "StockItem_$Parent": "Primary", "StockGroup_$Parent": "Primary" }
+            ]
         }
     };
 
@@ -99,21 +98,24 @@ const Answer = ({ qn }) => {
                     });
                       if (missingColumns.length > 0) {
                         errors.push("The result file is missing some required columns");
-                    }
-
-                    // 2. Check row count (perform even if columns are missing)
+                    }                    // 2. Check row count (perform even if columns are missing)
                     if (jsonData.length !== expectedAnswer.expectedResults.rowCount) {
                         errors.push(`Incorrect number of rows`);
-                    }                    // 3. Check required values for columns that exist
-                    Object.entries(expectedAnswer.expectedResults.requiredValues).forEach(([column, values]) => {
-                        if (columns.includes(column) && values.length > 0) {
-                            const resultValues = jsonData.map(row => row[column]?.toString());
-                            const missingValues = values.filter(value => !resultValues.includes(value));
-                            if (missingValues.length > 0) {
-                                errors.push(`Missing or incorrect values in column ${column}`);
-                            }
-                        }
+                    }
+
+                    // 3. Check required rows exist in the result
+                    const foundRows = expectedAnswer.expectedResults.requiredRows.map(expectedRow => {
+                        return jsonData.some(resultRow => {
+                            return Object.keys(expectedRow).every(column => 
+                                resultRow[column]?.toString() === expectedRow[column]
+                            );
+                        });
                     });
+                    
+                    const missingRowCount = foundRows.filter(found => !found).length;
+                    if (missingRowCount > 0) {
+                        errors.push(`Missing ${missingRowCount} required row(s) in the result`);
+                    }
 
                     resolve(errors);
                 } catch (err) {
