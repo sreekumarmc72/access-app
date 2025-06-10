@@ -15,13 +15,14 @@ const Answer = ({ qn }) => {
 
     // Expected answer format for validation
     const expectedAnswer = {
-        query: "SELECT StockItem.[$Name], StockItem.[$Parent] AS [StockItem_$Parent], StockGroup.[$Parent] AS [StockGroup_$Parent] FROM StockItem LEFT JOIN StockGroup ON StockItem.[$Parent] = StockGroup.[$Name];",        expectedResults: {
+        query: "SELECT StockItem.[$Name], StockItem.[$Parent] AS [StockItem_$Parent], StockGroup.[$Parent] AS [StockGroup_$Parent] FROM StockItem LEFT JOIN StockGroup ON StockItem.[$Parent] = StockGroup.[$Name];",
+        expectedResults: {
             columns: ["$Name", "StockItem_$Parent", "StockGroup_$Parent"],
-            rowCount: 10816,
+            rowCount: 4,
             requiredValues: {
-                "$Name": [],
-                "StockItem_$Parent": [],
-                "StockGroup_$Parent": []
+                "$Name": ["122", "Accent Exe Vin:284287", "Accent GLE Executive E3 Engn.G4EBAM268599", "Accent GLE EXE Vin:298416"],
+                "StockItem_$Parent": ["Primary", "Vehicle", "Vehicle", "Primary"],
+                "StockGroup_$Parent": ["Primary", "Primary", "Primary", "Primary"]
             }
         }
     };
@@ -103,15 +104,13 @@ const Answer = ({ qn }) => {
                     // 2. Check row count (perform even if columns are missing)
                     if (jsonData.length !== expectedAnswer.expectedResults.rowCount) {
                         errors.push(`Incorrect number of rows`);
-                    }
-
-                    // 3. Check required values for columns that exist
+                    }                    // 3. Check required values for columns that exist
                     Object.entries(expectedAnswer.expectedResults.requiredValues).forEach(([column, values]) => {
                         if (columns.includes(column) && values.length > 0) {
                             const resultValues = jsonData.map(row => row[column]?.toString());
                             const missingValues = values.filter(value => !resultValues.includes(value));
                             if (missingValues.length > 0) {
-                                errors.push(`Missing values in column ${column}: ${missingValues.join(", ")}`);
+                                errors.push(`Missing or incorrect values in column ${column}`);
                             }
                         }
                     });
